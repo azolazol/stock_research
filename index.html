@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>리서치 콘솔</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --card: #ffffff;
+      --border: #e6e4dd;
+      --text-main: #1d1d1b;
+      --text-sub: #7c7a73;
+      --green: #18794e;
+      --green-bg: #d9f3e4;
+      --red: #b42318;
+      --amber-bg: #f5dfb8;
+      --amber-text: #7a450d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 28px 24px 60px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    .meta { font-size: 13px; color: var(--text-sub); }
+    
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      margin: 28px 0 14px;
+    }
+    .section-title span.sub {
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .kpi-card {
+      padding: 16px 18px;
+      border-radius: 10px;
+    }
+    .kpi-card.highlight {
+      background-color: var(--amber-bg);
+      color: var(--amber-text);
+    }
+    .kpi-label { font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
+    .kpi-card.highlight .kpi-label { color: var(--amber-text); font-weight: 600; }
+    .kpi-val { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+
+    /* Card Wrapper */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th {
+      text-align: right;
+      font-weight: 500;
+      font-size: 12px;
+      color: var(--text-sub);
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    th:first-child, td:first-child { text-align: left; }
+    td {
+      text-align: right;
+      padding: 13px 0;
+      border-bottom: 1px solid #f1f0ec;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    tr:last-child td { border-bottom: none; }
+    .pos { color: var(--green); }
+    .neg { color: var(--red); }
+    .muted-row td { color: var(--text-sub); font-weight: 400; font-size: 13px; }
+
+    /* Screener 2-Column */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .box-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .box-title {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-bottom: 14px;
+    }
+    .scr-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .scr-item:last-child { margin-bottom: 0; }
+    .scr-sym { font-weight: 700; min-width: 58px; font-family: monospace; font-size: 14px; }
+    .scr-desc { color: var(--text-sub); }
+
+    /* Sector Radar */
+    .radar-metrics {
+      display: flex;
+      gap: 36px;
+      margin-bottom: 16px;
+    }
+    .rm-label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
+    .rm-val { font-size: 20px; font-weight: 700; }
+    .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 99px;
+      background: var(--green-bg);
+      color: var(--green);
+    }
+    .tag.warn {
+      background: var(--amber-bg);
+      color: var(--amber-text);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>리서치 콘솔</h1>
+    <div class="meta" id="updated-at">2026-10-14 KST · 자동 갱신</div>
+  </header>
+
+  <!-- 1. 포트폴리오 · 룰 트리거 -->
+  <div class="section-title">🗂️ 포트폴리오 · 룰 트리거</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">SPY 고점 대비</div>
+      <div class="kpi-val" id="kpi-spy">-3.8%</div>
+    </div>
+    <div class="kpi-card highlight">
+      <div class="kpi-label">-10% 트리거까지</div>
+      <div class="kpi-val" id="kpi-trigger">6.2%p</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">현금 비중</div>
+      <div class="kpi-val" id="kpi-cash">31%</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>종목</th>
+          <th>1D</th>
+          <th>1M</th>
+          <th>52주 위치</th>
+          <th>비중</th>
+        </tr>
+      </thead>
+      <tbody id="portfolio-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- 2. 스크리너 결과 -->
+  <div class="section-title">⏳ 스크리너 결과</div>
+  <div class="grid-2">
+    <div class="box-card">
+      <div class="box-title" id="scr-mom-title">신고가 · 물극필반 신규</div>
+      <div id="scr-momentum"></div>
+    </div>
+    <div class="box-card">
+      <div class="box-title" id="scr-val-title">딥밸류 큐 리포트 대기</div>
+      <div id="scr-deepvalue"></div>
+    </div>
+  </div>
+
+  <!-- 3. 관심종목 수급 -->
+  <div class="section-title">⇄ 관심종목 수급 <span class="sub">20일 누적</span></div>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>종목</th>
+          <th>외인(억)</th>
+          <th>기관(억)</th>
+          <th>z</th>
+        </tr>
+      </thead>
+      <tbody id="flow-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- 4. 섹터 레이더 -->
+  <div class="section-title" id="radar-header">🚢 K-뷰티 수출 레이더 <span class="sub" id="radar-period">9월 1~10일 잠정</span></div>
+  <div class="box-card">
+    <div class="radar-metrics" id="radar-metrics"></div>
+    <div class="tags" id="radar-tags"></div>
+  </div>
+
+  <script>
+    // Apps Script 배포 후 발급받은 웹 앱 URL을 여기에 입력하세요.
+    const GAS_WEB_APP_URL = "";
+
+    const fallbackData = {
+      updatedAt: "2026-10-14 11:56 KST",
+      kpi: { spyDrawdown: -0.038, triggerBuffer: 6.2, cashWeight: 0.31 },
+      holdings: [
+        { symbol: "GOOGL", change1D: 0.012, change1M: 0.064, pos52W: 0.94, weight: 0.121 },
+        { symbol: "MSFT", change1D: -0.004, change1M: 0.021, pos52W: 0.88, weight: 0.107 },
+        { symbol: "ENPH", change1D: -0.028, change1M: -0.140, pos52W: 0.11, weight: 0.023 }
+      ],
+      screener: {
+        momentum: [
+          { symbol: "AVGO", status: "NDX · G5 통과" },
+          { symbol: "CRDO", status: "R2K · G4" },
+          { symbol: "247540", status: "KOSDAQ · 관찰" }
+        ],
+        deepValue: [
+          { symbol: "MOS", status: "순환적 부진" },
+          { symbol: "BEN", status: "구조적 쇠퇴 의심" },
+          { symbol: "SWKS", status: "정성평가 전" }
+        ]
+      },
+      flows: [
+        { name: "SK하이닉스", foreign20D: 4120, inst20D: -880, zScore: 2.4 },
+        { name: "실리콘투", foreign20D: -310, inst20D: 145, zScore: -1.1 },
+        { name: "동국제약", foreign20D: 62, inst20D: 88, zScore: 0.7 }
+      ],
+      radar: [{
+        title: "K-뷰티 수출 레이더",
+        period: "9월 1~10일 잠정",
+        m1Name: "화장품 수출 YoY", m1Val: "+18.4%",
+        m2Name: "전순 대비", m2Val: "+2.1%",
+        m3Name: "폴란드", m3Val: "-9.6%",
+        tags: ["실리콘투 수혜", "코스맥스", "폴란드 리스크 신호"]
+      }]
+    };
+
+    const fmtPct = (v, signed = true) => {
+      const num = Number(v) * 100;
+      const sign = signed && num > 0 ? "+" : "";
+      return `${sign}${num.toFixed(1)}%`;
+    };
+
+    const fmtNum = (v) => {
+      const num = Number(v);
+      const sign = num > 0 ? "+" : "";
+      return `${sign}${num.toLocaleString()}`;
+    };
+
+    function render(data) {
+      document.getElementById("updated-at").textContent = `${data.updatedAt} · 자동 갱신`;
+      document.getElementById("kpi-spy").textContent = fmtPct(data.kpi.spyDrawdown, false);
+      document.getElementById("kpi-trigger").textContent = `${Number(data.kpi.triggerBuffer).toFixed(1)}%p`;
+      document.getElementById("kpi-cash").textContent = `${Math.round(Number(data.kpi.cashWeight) * 100)}%`;
+
+      // Holdings
+      const pBody = document.getElementById("portfolio-tbody");
+      pBody.innerHTML = data.holdings.map(h => `
+        <tr>
+          <td>${h.symbol}</td>
+          <td class="${h.change1D >= 0 ? 'pos' : 'neg'}">${fmtPct(h.change1D)}</td>
+          <td class="${h.change1M >= 0 ? 'pos' : 'neg'}">${fmtPct(h.change1M)}</td>
+          <td>${Math.round(Number(h.pos52W) * 100)}%</td>
+          <td>${(Number(h.weight) * 100).toFixed(1)}%</td>
+        </tr>
+      `).join('');
+
+      // Screener
+      document.getElementById("scr-momentum").innerHTML = data.screener.momentum.map(s => `
+        <div class="scr-item"><span class="scr-sym">${s.symbol}</span><span class="scr-desc">${s.status}</span></div>
+      `).join('');
+      document.getElementById("scr-deepvalue").innerHTML = data.screener.deepValue.map(s => `
+        <div class="scr-item"><span class="scr-sym">${s.symbol}</span><span class="scr-desc">${s.status}</span></div>
+      `).join('');
+
+      // Flows
+      document.getElementById("flow-tbody").innerHTML = data.flows.map(f => `
+        <tr>
+          <td>${f.name}</td>
+          <td class="${f.foreign20D >= 0 ? 'pos' : 'neg'}">${fmtNum(f.foreign20D)}</td>
+          <td class="${f.inst20D >= 0 ? 'pos' : 'neg'}">${fmtNum(f.inst20D)}</td>
+          <td>${f.zScore}</td>
+        </tr>
+      `).join('');
+
+      // Radar
+      if (data.radar && data.radar.length > 0) {
+        const r = data.radar[0];
+        document.getElementById("radar-header").innerHTML = `🚢 ${r.title} <span class="sub">${r.period}</span>`;
+        document.getElementById("radar-metrics").innerHTML = [
+          { n: r.m1Name, v: r.m1Val },
+          { n: r.m2Name, v: r.m2Val },
+          { n: r.m3Name, v: r.m3Val }
+        ].map(m => `
+          <div>
+            <div class="rm-label">${m.n}</div>
+            <div class="rm-val ${String(m.v).startsWith('+') ? 'pos' : (String(m.v).startsWith('-') ? 'neg' : '')}">${m.v}</div>
+          </div>
+        `).join('');
+        document.getElementById("radar-tags").innerHTML = r.tags.map(t => `
+          <span class="tag ${t.includes('리스크') ? 'warn' : ''}">${t}</span>
+        `).join('');
+      }
+    }
+
+    async function init() {
+      if (!GAS_WEB_APP_URL) {
+        render(fallbackData);
+        return;
+      }
+      try {
+        const res = await fetch(GAS_WEB_APP_URL);
+        const json = await res.json();
+        render(json);
+      } catch (e) {
+        console.error("데이터 로드 실패, 기본 데이터를 표시합니다.", e);
+        render(fallbackData);
+      }
+    }
+    init();
+  </script>
+</body>
+</html>
